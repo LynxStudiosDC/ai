@@ -1,0 +1,379 @@
+<html><head><base href="https://aichatgenie.com/" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genie AI</title>
+<style>
+  :root {
+    --accent-color: #00ffcc;
+    --background-color: #1a1a2e;
+    --text-color: #e0e0e0;
+    --sidebar-color: rgba(0, 0, 0, 0.3);
+    --chat-background: rgba(0, 0, 0, 0.2);
+    --user-message-bg: #2a2a4a;
+    --ai-message-bg: #16213e;
+    --input-bg: #2a2a4a;
+  }
+
+  body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;
+    background: linear-gradient(135deg, var(--background-color), #16213e);
+    color: var(--text-color);
+    display: flex;
+  }
+  .sidebar {
+    width: 250px;
+    background: var(--sidebar-color);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: calc(100% - 250px);
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 2.5em;
+    color: var(--accent-color);
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+  }
+  #chat-window {
+    flex-grow: 1;
+    overflow-y: auto;
+    border: 1px solid #444;
+    border-radius: 10px;
+    padding: 20px;
+    background: var(--chat-background);
+    margin-bottom: 20px;
+  }
+  #user-input {
+    display: flex;
+  }
+  #message-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px 0 0 5px;
+    background: var(--input-bg);
+    color: var(--text-color);
+  }
+  #send-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    background: var(--accent-color);
+    color: var(--background-color);
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #send-button:hover {
+    background: #00ccaa;
+  }
+  .message {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+  }
+  .user-message {
+    background: var(--user-message-bg);
+    align-self: flex-end;
+    margin-left: auto;
+  }
+  .ai-message {
+    background: var(--ai-message-bg);
+    align-self: flex-start;
+  }
+  #thinking {
+    text-align: center;
+    color: var(--accent-color);
+    font-style: italic;
+    margin-top: 10px;
+    display: none;
+  }
+  .sidebar-button {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background: var(--accent-color);
+    color: var(--background-color);
+    cursor: pointer;
+    transition: background 0.3s ease;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sidebar-button:hover {
+    background: #00ccaa;
+  }
+  .sidebar-button svg {
+    margin-right: 10px;
+  }
+  @keyframes glow {
+    0% { box-shadow: 0 0 5px var(--accent-color); }
+    50% { box-shadow: 0 0 20px var(--accent-color); }
+    100% { box-shadow: 0 0 5px var(--accent-color); }
+  }
+  .glow {
+    animation: glow 2s infinite;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+  }
+  .modal-content {
+    background-color: var(--user-message-bg);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  .close:hover,
+  .close:focus {
+    color: var(--accent-color);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .settings-option {
+    margin-bottom: 15px;
+  }
+  .settings-option label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  .settings-option select,
+  .settings-option input[type="color"] {
+    width: 100%;
+    padding: 5px;
+    border-radius: 5px;
+    border: none;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+  }
+</style>
+</head>
+<body>
+<div class="sidebar">
+  <button id="new-chat" class="sidebar-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    New Chat
+  </button>
+  <button id="settings" class="sidebar-button">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"></circle>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+    </svg>
+    Settings
+  </button>
+</div>
+<div class="main-content">
+  <header>
+    <h1>Genie AI v1.0</h1>
+  </header>
+  <div id="chat-window"></div>
+  <div id="thinking">Genie AI is thinking...</div>
+  <div id="user-input">
+    <input type="text" id="message-input" placeholder="Ask me anything...">
+    <button id="send-button">Send</button>
+  </div>
+</div>
+
+<div id="settings-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Settings</h2>
+    <div class="settings-option">
+      <label for="ai-model">AI Model:</label>
+      <select id="ai-model">
+        <option value="Genie - 1.0">Genie - 1.0</option>
+        <option value="Genie - 4o">Genie - 4o</option>
+        <option value="Genie - 4o mini">Genie - 4o mini</option>
+        <option value="claude">Claude</option>
+        <option value="palm">PaLM</option>
+      </select>
+    </div>
+    <div class="settings-option">
+      <label for="theme">Theme:</label>
+      <select id="theme">
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </div>
+    <div class="settings-option">
+      <label for="accent-color">Accent Color:</label>
+      <input type="color" id="accent-color" value="#00ffcc">
+    </div>
+    <div class="settings-option">
+      <label for="font-size">Font Size:</label>
+      <select id="font-size">
+        <option value="small">Small</option>
+        <option value="medium" selected>Medium</option>
+        <option value="large">Large</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/2.0.3/marked.min.js"></script>
+<script>
+const chatWindow = document.getElementById('chat-window');
+const messageInput = document.getElementById('message-input');
+const sendButton = document.getElementById('send-button');
+const thinkingIndicator = document.getElementById('thinking');
+const newChatButton = document.getElementById('new-chat');
+const settingsButton = document.getElementById('settings');
+const modal = document.getElementById('settings-modal');
+const closeModal = document.getElementsByClassName('close')[0];
+const themeSelect = document.getElementById('theme');
+const accentColorInput = document.getElementById('accent-color');
+const fontSizeSelect = document.getElementById('font-size');
+const aiModelSelect = document.getElementById('ai-model');
+
+let currentAIModel = 'Genie AI v1.0';
+
+function addMessage(content, isUser = false) {
+  const messageElement = document.createElement('div');
+  messageElement.classList.add('message');
+  messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
+  messageElement.innerHTML = marked(content);
+  chatWindow.appendChild(messageElement);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+function simulateAIResponse(userMessage) {
+  thinkingIndicator.style.display = 'block';
+  
+  setTimeout(() => {
+    thinkingIndicator.style.display = 'none';
+    
+    let aiResponse;
+    if (userMessage.toLowerCase().includes('hello') || userMessage.toLowerCase().includes('hi')) {
+      aiResponse = `Hello! I'm the ${currentAIModel.toUpperCase()} model. How can I assist you today?`;
+    } else if (userMessage.toLowerCase().includes('how are you')) {
+      aiResponse = `As an AI model (${currentAIModel.toUpperCase()}), I don't have feelings, but I'm functioning well and ready to help you. What would you like to know?`;
+    } else if (userMessage.toLowerCase().includes('your name')) {
+      aiResponse = `I'm an AI assistant powered by the ${currentAIModel.toUpperCase()} model. I'm here to help with a wide range of topics and tasks.`;
+    } else if (userMessage.toLowerCase().includes('thank')) {
+      aiResponse = "You're welcome! I'm glad I could help. Is there anything else you'd like to know?";
+    } else {
+      aiResponse = `That's an interesting question. As the ${currentAIModel.toUpperCase()} model, I can provide information on a wide range of topics. Could you please provide more context or specify what particular aspect you're interested in?`;
+    }
+    
+    addMessage(aiResponse);
+  }, 1500 + Math.random() * 1500);
+}
+
+sendButton.addEventListener('click', () => {
+  const userMessage = messageInput.value.trim();
+  if (userMessage) {
+    addMessage(userMessage, true);
+    messageInput.value = '';
+    simulateAIResponse(userMessage);
+  }
+});
+
+messageInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendButton.click();
+  }
+});
+
+newChatButton.addEventListener('click', () => {
+  chatWindow.innerHTML = '';
+  addMessage(`Welcome to a new chat session! I'm the ${currentAIModel.toUpperCase()} model. How can I assist you today?`);
+});
+
+settingsButton.addEventListener('click', () => {
+  modal.style.display = "block";
+});
+
+closeModal.addEventListener('click', () => {
+  modal.style.display = "none";
+});
+
+window.addEventListener('click', (event) => {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+});
+
+themeSelect.addEventListener('change', (e) => {
+  if (e.target.value === 'light') {
+    document.documentElement.style.setProperty('--background-color', '#f0f0f0');
+    document.documentElement.style.setProperty('--text-color', '#333333');
+    document.documentElement.style.setProperty('--sidebar-color', 'rgba(0, 0, 0, 0.1)');
+    document.documentElement.style.setProperty('--chat-background', 'rgba(255, 255, 255, 0.8)');
+    document.documentElement.style.setProperty('--user-message-bg', '#e1e1e1');
+    document.documentElement.style.setProperty('--ai-message-bg', '#ffffff');
+    document.documentElement.style.setProperty('--input-bg', '#ffffff');
+  } else {
+    document.documentElement.style.setProperty('--background-color', '#1a1a2e');
+    document.documentElement.style.setProperty('--text-color', '#e0e0e0');
+    document.documentElement.style.setProperty('--sidebar-color', 'rgba(0, 0, 0, 0.3)');
+    document.documentElement.style.setProperty('--chat-background', 'rgba(0, 0, 0, 0.2)');
+    document.documentElement.style.setProperty('--user-message-bg', '#2a2a4a');
+    document.documentElement.style.setProperty('--ai-message-bg', '#16213e');
+    document.documentElement.style.setProperty('--input-bg', '#2a2a4a');
+  }
+});
+
+accentColorInput.addEventListener('change', (e) => {
+  document.documentElement.style.setProperty('--accent-color', e.target.value);
+});
+
+fontSizeSelect.addEventListener('change', (e) => {
+  document.body.style.fontSize = e.target.value === 'small' ? '14px' : e.target.value === 'large' ? '18px' : '16px';
+});
+
+aiModelSelect.addEventListener('change', (e) => {
+  currentAIModel = e.target.value;
+  addMessage(`AI model switched to ${currentAIModel.toUpperCase()}. How can I assist you with this model?`);
+});
+
+// Initial greeting
+addMessage(`Welcome to Genie AI! I'm an advanced AI assistant powered by the ${currentAIModel.toUpperCase()} model. I'm ready to help you with any questions or tasks. What would you like to know?`);
+
+// Add glow effect to input on focus
+messageInput.addEventListener('focus', () => {
+  messageInput.classList.add('glow');
+});
+
+messageInput.addEventListener('blur', () => {
+  messageInput.classList.remove('glow');
+});
+
+// Apply initial settings
+document.documentElement.style.setProperty('--accent-color', accentColorInput.value);
+</script>
+</body></html>
